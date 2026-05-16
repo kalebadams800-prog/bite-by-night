@@ -417,38 +417,42 @@ do -- FrameWork
     --
 
     Config.HideScreen = LPH_JIT_MAX(function(Self, Title)
+        -- Create a small non-blocking status overlay instead of a full black screen
         Black_UI = Instance.new("ScreenGui")
         Black_UI.Name = getexecutorname().."____{_____"
         Black_UI.Parent = gethui and gethui() or Services.CoreGui
-    
+
         local frame = Instance.new("Frame")
-        frame.Name = "BlackFrame"
-        frame.Size = UDim2.new(2, 0, 2, 0) 
-        frame.Position = UDim2.new(0, -155, 0, -155) 
-        frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) 
-        frame.BackgroundTransparency = 0
+        frame.Name = "HideUIFrame"
+        frame.Size = UDim2.new(0, 360, 0, 64)
+        frame.Position = UDim2.new(0, 12, 0, 12)
+        frame.BackgroundColor3 = Color3.fromRGB(16, 18, 21)
+        frame.BackgroundTransparency = 0.08
+        frame.BorderSizePixel = 0
+        frame.ZIndex = 10
         frame.Parent = Black_UI
-    
+
+        Instances = Instances or {}
+
         local textLabel = Instance.new("TextLabel")
         textLabel.Name = "\nhideuiwave"
-        textLabel.Size = UDim2.new(0, 400, 0, 100)
+        textLabel.Size = UDim2.new(1, -16, 1, -16)
+        textLabel.Position = UDim2.new(0, 8, 0, 8)
         textLabel.Font = Enum.Font.SourceSansBold
         textLabel.RichText = true
-        local accent = Library.Theme.Accent
+        local accent = Library and Library.Theme and Library.Theme.Accent or Color3.fromRGB(173,216,230)
         local accentString = string.format("rgb(%d,%d,%d)", accent.R * 255, accent.G * 255, accent.B * 255)
 
-        textLabel.Text = '<font color="' .. accentString .. '">wave</font>\n' .. Title
+        textLabel.Text = '<font color="' .. accentString .. '">wave</font>\n' .. (Title or "")
         textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
         textLabel.BackgroundTransparency = 1
-        textLabel.TextSize = 36
-        textLabel.TextStrokeTransparency = 0.8 
-        textLabel.TextXAlignment = Enum.TextXAlignment.Center
-        textLabel.TextYAlignment = Enum.TextYAlignment.Center
+        textLabel.TextSize = 16
+        textLabel.TextStrokeTransparency = 0.9
+        textLabel.TextXAlignment = Enum.TextXAlignment.Left
+        textLabel.TextYAlignment = Enum.TextYAlignment.Top
         textLabel.TextWrapped = true
-        textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-        textLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
         textLabel.Parent = Black_UI
-    
+
         return textLabel
     end)
 
@@ -502,9 +506,17 @@ do -- FrameWork
         return true
     end)
 
+    -- Saved teleport locations
+    local Locations = {
+        ["Mansion 🏰"] = CFrame.new(-788.88, 253.57, 1380.08);
+        ["Mansion Roof 🏰"] = CFrame.new(-114.51, 397.14, -562.60);
+        ["Penthouse 🏢"] = CFrame.new(-1522.92, 253.30, -597.28);
+        ["RPT 🔫"] = CFrame.new(-387.38, 254.45, -381.34);
+    }
+
     Config.GunRemote = LPH_JIT_MAX(function(self, target, hpart, damage) 
         if not hpart then
-            hpart = "head"
+            hpart = "head" 
         end
 
         if not damage then
@@ -4335,10 +4347,11 @@ do -- Library
     end
 
     Library.Holder = Instances:Create("ScreenGui", {
-        Parent = game:GetService("CoreGui"),
+        Parent = gethui(),
         Name = "\0",
         ZIndexBehavior = Enum.ZIndexBehavior.Global,
         DisplayOrder = 2,
+        IgnoreGuiInset = true,
         ResetOnSpawn = false
     })
 
@@ -13597,6 +13610,29 @@ do
             
                         fireproximityprompt(Workspace.ATMMoney.Prompt)
                     end})
+
+                    -- Money Drop
+                    local MoneyDropEnabled = false
+                    task.spawn(function()
+                        while task.wait(0.3) do
+                            if MoneyDropEnabled then
+                                pcall(function()
+                                    ReplicatedStorage:WaitForChild("BankProcessRemote"):InvokeServer("Drop", "10000")
+                                end)
+                            end
+                        end
+                    end)
+
+                    ManualFarm_Section:Toggle({
+                        Name = "Money Drop 10k",
+                        Flag = "TheBronx3/MoneyDrop10k",
+                        Default = false,
+                        Tooltip = "Drops $10k every 0.3s",
+                        Callback = function(State)
+                            MoneyDropEnabled = State
+                        end
+                    })
+
                 end 
 
                 do -- Vulns
@@ -13926,6 +13962,9 @@ do
                         ["Construction Job 🔨"] = CFrame.new(-1729, 371, -1171);
                         ["Backpack Shop 🎒"] = CFrame.new(-694, 254, -684);
                         ["Hospital 🏥"] = CFrame.new(-1592, 254, 23);
+                        ["Mansion 🏰"] = CFrame.new(-788.88, 253.57, 1380.08);
+                        ["Penthouse 🏢"] = CFrame.new(-114.51, 397.14, -562.60);
+                        ["RPT 🔫"] = CFrame.new(-387.38, 254.45, -381.34);
                     };
 
                     local Location_Names = {}
